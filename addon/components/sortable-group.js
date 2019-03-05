@@ -1,10 +1,9 @@
-import { A } from '@ember/array';
-import Component from '@ember/component';
-import { set, get } from '@ember/object';
-import { run } from '@ember/runloop';
-import layout from '../templates/components/sortable-group';
-import { computed } from '@ember/object';
-import { invokeAction } from 'ember-invoke-action';
+import { A } from "@ember/array";
+import Component from "@ember/component";
+import { set, get } from "@ember/object";
+import { run } from "@ember/runloop";
+import layout from "../templates/components/sortable-group";
+import { computed } from "@ember/object";
 
 const a = A;
 const NO_MODEL = {};
@@ -12,14 +11,14 @@ const NO_MODEL = {};
 export default Component.extend({
   layout: layout,
 
-  attributeBindings: ['data-test-selector'],
+  attributeBindings: ["data-test-selector"],
 
   /**
     @property direction
     @type string
     @default y
   */
-  direction: 'y',
+  direction: "y",
 
   /**
     @property model
@@ -41,9 +40,9 @@ export default Component.extend({
     @type Number
   */
   itemPosition: computed(function() {
-    let direction = this.get('direction');
-    const firstObject = this.get('sortedItems').objectAt(0)
-    return get(firstObject, direction) - get(firstObject, 'spacing');
+    let direction = this.get("direction");
+    const firstObject = this.get("sortedItems").objectAt(0);
+    return get(firstObject, direction) - get(firstObject, "spacing");
   }).volatile(),
 
   /**
@@ -51,8 +50,8 @@ export default Component.extend({
     @type Array
   */
   sortedItems: computed(function() {
-    let items = a(this.get('items'));
-    let direction = this.get('direction');
+    let items = a(this.get("items"));
+    let direction = this.get("direction");
     return a(items.sortBy(direction));
   }).volatile(),
 
@@ -62,7 +61,7 @@ export default Component.extend({
     @param {SortableItem} [item]
   */
   registerItem(item) {
-    this.get('items').addObject(item);
+    this.get("items").addObject(item);
   },
 
   /**
@@ -71,7 +70,7 @@ export default Component.extend({
     @param {SortableItem} [item]
   */
   deregisterItem(item) {
-    this.get('items').removeObject(item);
+    this.get("items").removeObject(item);
   },
 
   /**
@@ -81,7 +80,7 @@ export default Component.extend({
     @method prepare
   */
   prepare() {
-    this._itemPosition = this.get('itemPosition');
+    this._itemPosition = this.get("itemPosition");
   },
 
   /**
@@ -89,34 +88,34 @@ export default Component.extend({
     @method update
   */
   update() {
-    let sortedItems = this.get('sortedItems');
+    let sortedItems = this.get("sortedItems");
 
     // Position of the first element
     let position = this._itemPosition;
 
     // Just in case we haven’t called prepare first.
     if (position === undefined) {
-      position = this.get('itemPosition');
+      position = this.get("itemPosition");
     }
 
     sortedItems.forEach(item => {
       let dimension;
-      let direction = this.get('direction');
+      let direction = this.get("direction");
 
-      if (!get(item, 'isDragging')) {
+      if (!get(item, "isDragging")) {
         set(item, direction, position);
       }
 
       // add additional spacing around active element
-      if (get(item, 'isBusy')) {
-        position += get(item, 'spacing') * 2;
+      if (get(item, "isBusy")) {
+        position += get(item, "spacing") * 2;
       }
 
-      if (direction === 'x') {
-        dimension = 'width';
+      if (direction === "x") {
+        dimension = "width";
       }
-      if (direction === 'y') {
-        dimension = 'height';
+      if (direction === "y") {
+        dimension = "height";
       }
 
       position += get(item, dimension);
@@ -127,37 +126,37 @@ export default Component.extend({
     @method commit
   */
   commit() {
-    let items = this.get('sortedItems');
-    let groupModel = this.get('model');
-    let itemModels = items.mapBy('model');
-    let draggedItem = items.findBy('wasDropped', true);
+    let items = this.get("sortedItems");
+    let groupModel = this.get("model");
+    let itemModels = items.mapBy("model");
+    let draggedItem = items.findBy("wasDropped", true);
     let draggedModel;
 
     if (draggedItem) {
-      set(draggedItem, 'wasDropped', false); // Reset
-      draggedModel = get(draggedItem, 'model');
+      set(draggedItem, "wasDropped", false); // Reset
+      draggedModel = get(draggedItem, "model");
     }
 
     delete this._itemPosition;
 
-    run.schedule('render', () => {
-      items.invoke('freeze');
+    run.schedule("render", () => {
+      items.invoke("freeze");
     });
 
-    run.schedule('afterRender', () => {
-      items.invoke('reset');
+    run.schedule("afterRender", () => {
+      items.invoke("reset");
     });
 
     run.next(() => {
-      run.schedule('render', () => {
-        items.invoke('thaw');
+      run.schedule("render", () => {
+        items.invoke("thaw");
       });
     });
 
     if (groupModel !== NO_MODEL) {
-      invokeAction(this, 'onChange', groupModel, itemModels, draggedModel);
+      this.onChange && this.onChange(groupModel, itemModels, draggedModel);
     } else {
-      invokeAction(this, 'onChange', itemModels, draggedModel);
+      this.onChange && this.onChange(itemModels, draggedModel);
     }
   }
 });

@@ -7,7 +7,6 @@ import Ember from "ember";
 import { computed } from "@ember/object";
 import scrollParent from "../system/scroll-parent";
 import ScrollContainer from "../system/scroll-container";
-import { invokeAction } from "ember-invoke-action";
 import { throttle } from "@ember/runloop";
 
 const dragActions = "mousemove.emberSortable touchmove.emberSortable";
@@ -414,7 +413,7 @@ export default Mixin.create({
 
     this._tellGroup("prepare");
     this.set("isDragging", true);
-    invokeAction(this, "onDragStart", this.get("model"));
+    this.onDragStart && this.onDragStart(this.get("model"));
 
     this._scrollOnEdges(drag);
   },
@@ -687,7 +686,7 @@ export default Mixin.create({
     @private
   */
   _complete() {
-    invokeAction(this, "onDragStop", this.get("model"));
+    this.onDragStop && this.onDragStop(this.get("model"));
     this.set("isDropping", false);
     this.set("wasDropped", true);
     this._tellGroup("commit");
